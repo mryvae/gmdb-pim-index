@@ -18,6 +18,7 @@ typedef struct _pull_package_metadata
     uint32_t result_size;
     uint32_t bucket_hit;
     uint32_t bucket_miss;
+    uint32_t nonsense;
 } pull_package_metadata;
 
 typedef struct _push_package
@@ -34,5 +35,6 @@ query_param *push_package_query_get(push_package *package);
 coo_matrix push_package_coo_init(push_package *package);
 coo_matrix push_package_coo_get(push_package *package);
 uint32_t push_package_size(push_package *package);
+void push_package_int_steam_dump(push_package *package);
 
 #endif

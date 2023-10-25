@@ -80,7 +80,7 @@ uint32_t push_package_size(push_package *package)
 
 void push_package_int_steam_dump(push_package *package)
 {
-    uint32_t size = push_package_size(package);
+    uint32_t size = package->used_memory + sizeof(push_package_head);
     int *p = (int *)package;
     for (int i = 0; i < size / sizeof(int); i++)
     {

@@ -12,8 +12,9 @@ static inline uint32_t hash_function(uint32_t key)
     return key;
 }
 
-void primary_index_dpu_init(primary_index_dpu *pid, __mram_ptr primary_index_entry *buckets_addr, uint32_t buckets_size)
+void primary_index_dpu_init(primary_index_dpu *pid, __mram_ptr primary_index_entry *buckets_addr, PRIMARY_INDEX_ID index_id, uint32_t buckets_size)
 {
+    pid->index_id = index_id;
     pid->buckets_size = next_power(buckets_size);
     pid->sizemask = pid->buckets_size - 1;
     pid->buckets = buckets_addr;
@@ -33,7 +34,7 @@ void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id)
     }
 }
 
-int primary_index_dpu_insert(primary_index_dpu *pid, uint32_t key, uint64_t val, block_mram_allocator *allocator)
+int primary_index_dpu_insert(primary_index_dpu *pid, int32_t key, uint64_t val, block_mram_allocator *allocator)
 {
     int32_t bucket_id = hash_function(key) & pid->sizemask, flag = 0;
     // printf("bucket_matrix_slice_dpu_insert_elem: row: %d, col: %d, bucket_id: %d\n", elem->row, elem->col, bucket_id);
@@ -69,7 +70,7 @@ int primary_index_dpu_insert(primary_index_dpu *pid, uint32_t key, uint64_t val,
     return PRIMARY_INDEX_OK;
 }
 
-int primary_index_dpu_delete(primary_index_dpu *pid, uint32_t key, block_mram_allocator *allocator)
+int primary_index_dpu_delete(primary_index_dpu *pid, int32_t key, block_mram_allocator *allocator)
 {
     int32_t bucket_id = hash_function(key) & pid->sizemask, flag = 0;
     __dma_aligned primary_index_entry entry_buffer;
@@ -116,7 +117,7 @@ int primary_index_dpu_delete(primary_index_dpu *pid, uint32_t key, block_mram_al
     return flag ? PRIMARY_INDEX_OK : PRIMARY_INDEX_ERR;
 }
 
-__mram_ptr primary_index_entry *primary_index_dpu_lookup(const primary_index_dpu *pid, uint32_t key)
+__mram_ptr primary_index_entry *primary_index_dpu_lookup(const primary_index_dpu *pid, int32_t key)
 {
     int32_t bucket_id = hash_function(key) & pid->sizemask, flag = 0;
     __dma_aligned primary_index_entry entry_buffer;

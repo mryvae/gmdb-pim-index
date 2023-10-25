@@ -15,14 +15,16 @@ BARRIER_INIT(barrier2, NR_TASKLETS);
 void initial()
 {
     mem_reset();
+    if (!global_index_block_mram_allocator_initial_flag)
+    {
+        block_mram_allocator_init(&global_index_block_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE, sizeof(primary_index_entry),
+                                  allocator_mutex_16_lock, allocator_mutex_16_unlock);
+        global_index_block_mram_allocator_initial_flag = 1;
+    }
 
-    // do other things
+    global_coo_A = push_package_dpu_coo_get();
+    primary_index_id = global_query_parameter->primary_index_id;
 }
-
-#define PRIMARY_INDEX_LOOKUP 1 
-#define PRIMARY_INDEX_INSERT 2 
-#define PRIMARY_INDEX_DELETE 3 
-#define PRIMARY_INDEX_CREATE 4
 
 int master()
 {
