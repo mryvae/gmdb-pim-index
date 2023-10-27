@@ -10,7 +10,6 @@ void primary_index_lookup_prepare()
         if (primary_index_id == global_prestored_primary_index[j].index_id)
         {
             global_primary_index = &(global_prestored_primary_index[j]);
-            global_coo_A_nnz = global_coo_A->nnz;
             break;
         }
     }
@@ -23,8 +22,8 @@ void primary_index_lookup_tasklets_run()
     if (tasklet_id == 0)
         return;
 
-    coo_matrix_elem *current_elem;
-    __mram_ptr coo_matrix_elem *start;
+    kv_elem *current_elem;
+    __mram_ptr kv_elem *start;
     int32_t nnz_start;
     int32_t nnz_tasklet;
     uint32_t nnz_handled = 0;
@@ -38,18 +37,18 @@ void primary_index_lookup_tasklets_run()
 
     if (global_primary_index)
     {
-        nnz_start = BLOCK_LOW(tasklet_id - 1, NR_SLAVE_TASKLETS, global_plus_nnz);
-        nnz_tasklet = BLOCK_SIZE(tasklet_id - 1, NR_SLAVE_TASKLETS, global_plus_nnz);
+        nnz_start = BLOCK_LOW(tasklet_id - 1, NR_SLAVE_TASKLETS, global_kvsd_nnz);
+        nnz_tasklet = BLOCK_SIZE(tasklet_id - 1, NR_SLAVE_TASKLETS, global_kvsd_nnz);
 
         if (nnz_tasklet > 0)
         {
-            start = (__mram_ptr coo_matrix_elem *)(&(global_coo_A->data[nnz_start]));
+            start = (__mram_ptr kv_elem *)(&(global_kvsd->data[nnz_start]));
             current_elem = seqread_init(local_cache, start, &sr);
 
         handle_elem:
             nnz_handled++;
             // printf("primary_index_dpu_lookup, key: %d\n", current_elem->col);
-            target = primary_index_dpu_lookup(global_primary_index, current_elem->col);
+            target = primary_index_dpu_lookup(global_primary_index, current_elem->key, global_key_len);
             if (target)
             {
                 mram_read(target, (void *)&entry_buffer, sizeof(primary_index_entry));
@@ -61,7 +60,7 @@ void primary_index_lookup_tasklets_run()
                 val = 0;
             }
             // printf("RESULT_CACHE_ADD_ELEM, row: %d, val: %ld\n", current_elem->row, val);
-            RESULT_CACHE_ADD_ELEM(result_cache, current_elem->row, val, result_cache_nnz);
+            RESULT_CACHE_ADD_ELEM(result_cache, current_elem->key_id, val, result_cache_nnz);
             if (result_cache_nnz >= RESULT_CACHE_SIZE)
             {
                 // last jump, write it to global_coo_result, need lock
@@ -73,7 +72,7 @@ void primary_index_lookup_tasklets_run()
         }
         while (nnz_handled < nnz_tasklet)
         {
-            current_elem = seqread_get(current_elem, sizeof(coo_matrix_elem), &sr);
+            current_elem = seqread_get(current_elem, sizeof(kv_elem), &sr);
             goto handle_elem;
         }
 

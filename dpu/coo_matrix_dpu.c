@@ -100,6 +100,15 @@ void coo_matrix_dpu_dump(const coo_matrix_dpu coo)
     printf("-------------------\n");
 }
 
+void kv_set_dpu_dump(const kv_set_dpu kvsd)
+{
+    printf("nnz: %d\n", kvsd->nnz);
+    for (int i = 0; i < kvsd->nnz; i++)
+    {
+        printf("key: %s ,val: %ld\n", kvsd->data[i].key, kvsd->data[i].val);
+    }
+}
+
 void coo_matrix_v_dpu_dump(const coo_matrix_v_dpu coo)
 {
     coo_matrix_v_dpu_iterator it;

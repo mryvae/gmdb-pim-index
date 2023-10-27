@@ -1,5 +1,25 @@
 #include "dpu_push.h"
 
+static inline unsigned int _hash_function_int(unsigned int key)
+{
+    key += ~(key << 15);
+    key ^=  (key >> 10);
+    key +=  (key << 3);
+    key ^=  (key >> 6);
+    key += ~(key << 11);
+    key ^=  (key >> 16);
+    return key;
+}
+
+static inline unsigned int _hash_function(char *buf, int len)
+{
+    unsigned int hash = 5381;
+
+    while (len--)
+        hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
+    return _hash_function_int(hash);
+}
+
 dpu_push_info *dpu_push_info_init(dpu_push_info *push_info, uint32_t nr_dpus)
 {
     if (!push_info)
@@ -54,13 +74,13 @@ void dpu_push_build_package_primary_index_create(dpu_push_info *push_info, PRIMA
     }
 }
 
-void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMARY_INDEX_ID id, uint32_t *keys, uint64_t *vals, uint32_t batch_size)
+void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint64_t *vals, uint32_t batch_size)
 {
     uint32_t nr_dpus = push_info->nr_dpus;
     int32_t dpu_id;
 
     push_package *packages = push_info->packages;
-    coo_matrix_v_elem *coo_data[NR_DPUS];
+    kv_elem *kv_data[NR_DPUS];
     uint32_t nnz[NR_DPUS];
     uint32_t capility[NR_DPUS];
     query_param *query;
@@ -72,17 +92,18 @@ void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMA
         query = push_package_query_get(&(packages[i]));
         query->type = PRIMARY_INDEX_INSERT;
         query->primary_index_id = id;
+        query->key_len = key_len;
     }
 
-    coo_matrix_v coo_kvs;
+    kv_set kvs;
     for (int i = 0; i < NR_DPUS; i++)
     {
-        coo_kvs = push_package_coo_init(&(packages[i]));
-        if (coo_kvs)
+        kvs = push_package_kv_init(&(packages[i]));
+        if (kvs)
         {
-            coo_data[i] = coo_kvs->data;
+            kv_data[i] = kvs->data;
             nnz[i] = 0;
-            capility[i] = coo_kvs->capacity;
+            capility[i] = kvs->capacity;
         }
         else
         {
@@ -92,29 +113,29 @@ void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMA
     }
     for (int i = 0; i < batch_size; i++)
     {
-        dpu_id = keys[i] % NR_DPUS;
-        coo_data[dpu_id][nnz[dpu_id]].row = keys[i];
-        coo_data[dpu_id][nnz[dpu_id]].val = vals[i];
+        dpu_id = _hash_function(keys[i], key_len) % NR_DPUS;
+        memcpy(kv_data[dpu_id][nnz[dpu_id]].key, keys[i], key_len);
+        kv_data[dpu_id][nnz[dpu_id]].val = vals[i];
         nnz[dpu_id]++;
     }
 
     for (int i = 0; i < NR_DPUS; i++)
     {
-        coo_kvs = push_package_coo_get(&(packages[i]));
-        if (coo_kvs)
+        kvs = push_package_kv_get(&(packages[i]));
+        if (kvs)
         {
-            coo_kvs->nnz = nnz[i];
+            kvs->nnz = nnz[i];
         }
     }
 }
 
-void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, uint32_t *keys, uint32_t batch_size)
+void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size)
 {
     uint32_t nr_dpus = push_info->nr_dpus;
     int32_t dpu_id;
 
     push_package *packages = push_info->packages;
-    coo_matrix_elem *coo_data[NR_DPUS];
+    kv_elem *kv_data[NR_DPUS];
     uint32_t nnz[NR_DPUS];
     uint32_t capility[NR_DPUS];
     query_param *query;
@@ -126,17 +147,18 @@ void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMA
         query = push_package_query_get(&(packages[i]));
         query->type = PRIMARY_INDEX_LOOKUP;
         query->primary_index_id = id;
+        query->key_len = key_len;
     }
 
-    coo_matrix coo_keys;
+    kv_set kvs;
     for (int i = 0; i < NR_DPUS; i++)
     {
-        coo_keys = push_package_coo_init(&(packages[i]));
-        if (coo_keys)
+        kvs = push_package_kv_init(&(packages[i]));
+        if (kvs)
         {
-            coo_data[i] = coo_keys->data;
+            kv_data[i] = kvs->data;
             nnz[i] = 0;
-            capility[i] = coo_keys->capacity;
+            capility[i] = kvs->capacity;
         }
         else
         {
@@ -146,20 +168,22 @@ void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMA
     }
     for (int i = 0; i < batch_size; i++)
     {
-        dpu_id = keys[i] % NR_DPUS;
-        coo_data[dpu_id][nnz[dpu_id]].row = i;
-        coo_data[dpu_id][nnz[dpu_id]].col = keys[i];
+        dpu_id = _hash_function(keys[i], key_len) % NR_DPUS;
+        kv_data[dpu_id][nnz[dpu_id]].key_id = i;
+        memcpy(kv_data[dpu_id][nnz[dpu_id]].key, keys[i], key_len);
         nnz[dpu_id]++;
     }
 
     for (int i = 0; i < NR_DPUS; i++)
     {
-        coo_keys = push_package_coo_get(&(packages[i]));
-        if (coo_keys)
+        printf("%d ",nnz[i]);
+        kvs = push_package_kv_get(&(packages[i]));
+        if (kvs)
         {
-            coo_keys->nnz = nnz[i];
+            kvs->nnz = nnz[i];
         }
     }
+    printf("\n");
 }
 
 void dpu_push_package(dpu_push_info *push_info, struct dpu_set_t dpu_set)

@@ -237,7 +237,7 @@ coo_matrix coo_matrix_merge(const coo_matrix *coo_results, uint32_t num)
     coo_matrix result;
 
     uint32_t capacity = 0;
-    CooType type = COO_INT32;
+    CooType type;
     if (num > 0)
     {
         type = coo_results[0]->type;
@@ -280,7 +280,7 @@ coo_matrix coo_matrix_merge(const coo_matrix *coo_results, uint32_t num)
 coo_matrix coo_matrix_add(coo_matrix A, coo_matrix B)
 {
     coo_matrix res = coo_matrix_create(B->capacity + A->capacity);
-    int i = 0, j = 0, k = 0;
+    int i = 0, j = 0;
     while (i < A->nnz || j < B->nnz)
     {
         if (i < A->nnz && j < B->nnz)

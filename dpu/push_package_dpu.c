@@ -1,23 +1,23 @@
 #include "push_package_dpu.h"
 
-coo_matrix_dpu push_package_dpu_coo_get()
+kv_set_dpu push_package_dpu_kv_get()
 {
-    if (global_package->coo_offset < 0)
+    if (global_package->kv_offset < 0)
     {
         // printf("error: push_package_coo_get coo hasn't been initialized!\n");
         return NULL;
     }
-    coo_matrix_dpu matrix = (coo_matrix_dpu)((global_package->buf + global_package->coo_offset));
-    return matrix;
+    kv_set_dpu kvsd = (kv_set_dpu)((global_package->buf + global_package->kv_offset));
+    return kvsd;
 }
 
-void push_package_dpu_coo_dump()
+void push_package_dpu_kv_dump()
 {
-    coo_matrix_dpu coo = push_package_dpu_coo_get();
-    printf("matrix coo: \n");
-    if (coo)
+    kv_set_dpu kvsd = push_package_dpu_kv_get();
+    printf("kv_set_dpu: \n");
+    if (kvsd)
     {
-        coo_matrix_dpu_dump(coo);
+        kv_set_dpu_dump(kvsd);
     }
 }
 

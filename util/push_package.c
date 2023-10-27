@@ -5,8 +5,9 @@ push_package *push_package_init(push_package *package)
     package->query_offset = 0;
     query_param *query = (query_param *)(package->buf + package->query_offset);
     query->type = 0;
-    package->coo_offset = -1;
+    package->kv_offset = -1;
     package->used_memory = sizeof(query_param);
+    return package;
 }
 
 query_param *push_package_query_get(push_package *package)
@@ -15,64 +16,38 @@ query_param *push_package_query_get(push_package *package)
     return query;
 }
 
-coo_matrix push_package_coo_init(push_package *package)
+kv_set push_package_kv_init(push_package *package)
 {
     query_param *query = (query_param *)(package->buf + package->query_offset);
-    if (query->type == PRIMARY_INDEX_LOOKUP)
-    {
-        package->coo_offset = package->used_memory;
-        coo_matrix coo = (coo_matrix)(package->buf + package->coo_offset);
+    package->kv_offset = package->used_memory;
+    kv_set kv = (kv_set)(package->buf + package->kv_offset);
 
-        // initial coo_matrix
-        int capacity = (MAX_PUSH_BUF_SIZE - package->used_memory - sizeof(struct _coo_matrix)) / sizeof(coo_matrix_elem);
-        if (capacity < 0)
-        {
-            printf("error: push_package_plus_init package capacity is no enough!\n");
-            return NULL;
-        }
-        coo_matrix_init(coo, capacity);
-        return coo;
-    }
-    else
+    // initial coo_matrix
+    int capacity = (MAX_PUSH_BUF_SIZE - package->used_memory - sizeof(struct _kv_set)) / sizeof(kv_elem);
+    if (capacity < 0)
     {
-        package->coo_offset = package->used_memory;
-        coo_matrix_v coo_v = (coo_matrix_v)(package->buf + package->used_memory);
-
-        // initial coo_matrix
-        int capacity = (MAX_PUSH_BUF_SIZE - package->used_memory - sizeof(struct _coo_matrix_v)) / sizeof(coo_matrix_v_elem);
-        if (capacity < 0)
-        {
-            printf("error: push_package_plus_init package capacity is no enough!\n");
-            return NULL;
-        }
-        coo_matrix_v_init(coo_v, capacity);
-        return coo_v;
+        printf("error: push_package_plus_init package capacity is no enough!\n");
+        return NULL;
     }
+    kv_set_init(kv, capacity);
+    return kv;
 }
 
-coo_matrix push_package_coo_get(push_package *package)
+kv_set push_package_kv_get(push_package *package)
 {
-    if (package->coo_offset < 0)
+    if (package->kv_offset < 0)
     {
         // printf("error: push_package_coo_get coo hasn't been initialized!\n");
         return NULL;
     }
-    coo_matrix matrix = (coo_matrix)((package->buf + package->coo_offset));
-    return matrix;
+    kv_set kv = (kv_set)((package->buf + package->kv_offset));
+    return kv;
 }
 
 uint32_t push_package_size(push_package *package)
 {
-    coo_matrix matrix = (coo_matrix)((package->buf + package->coo_offset));
-    if (matrix->type == COO_INT32)
-    {
-        package->used_memory += sizeof(struct _coo_matrix) + matrix->nnz * sizeof(coo_matrix_elem);
-    }
-    else
-    {
-        matrix = (coo_matrix_v)matrix;
-        package->used_memory += sizeof(struct _coo_matrix_v) + matrix->nnz * sizeof(coo_matrix_v_elem);
-    }
+    kv_set kv = (kv_set)((package->buf + package->kv_offset));
+    package->used_memory += sizeof(struct _kv_set) + kv->nnz * sizeof(kv_elem);
     uint32_t size = package->used_memory;
     size += sizeof(push_package_head);
     return size;

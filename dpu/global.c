@@ -6,14 +6,11 @@ __mram_ptr query_param *global_query_parameter = (__mram_ptr query_param *)(DPU_
 
 __mram_ptr pull_package_metadata *global_pull_package_metadata = (__mram_ptr pull_package_metadata *)(DPU_MRAM_HEAP_POINTER + PULL_PACKAGE_METADATA_OFFSET);
 
-coo_matrix_dpu global_coo_A;
-coo_matrix_v_dpu global_plus;
-coo_matrix_v_dpu global_minus;
-uint32_t global_coo_A_nnz;
-uint32_t global_plus_nnz;
-uint32_t global_minus_nnz;
+kv_set_dpu global_kvsd;
+uint32_t global_kvsd_nnz;
 
 PRIMARY_INDEX_ID primary_index_id;
+uint32_t global_key_len;
 primary_index_dpu *global_primary_index;
 
 __host uint32_t global_num_pre_load_primary_index = 0;

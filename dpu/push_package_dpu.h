@@ -3,9 +3,8 @@
 
 #include "global.h"
 
-coo_matrix_dpu push_package_dpu_coo_get();
-
-void push_package_dpu_coo_dump();
+kv_set_dpu push_package_dpu_kv_get();
+void push_package_dpu_kv_dump();
 void push_package_dpu_int_steam_dump();
 
 #endif

@@ -18,11 +18,13 @@ void initial()
     if (!global_index_block_mram_allocator_initial_flag)
     {
         block_mram_allocator_init(&global_index_block_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE, sizeof(primary_index_entry),
-                                  allocator_mutex_16_lock, allocator_mutex_16_unlock);
+                                  allocator_mutex_32_lock, allocator_mutex_32_unlock);
         global_index_block_mram_allocator_initial_flag = 1;
     }
 
-    global_coo_A = push_package_dpu_coo_get();
+    global_kvsd = push_package_dpu_kv_get();
+    global_kvsd_nnz = global_kvsd->nnz;
+    global_key_len = global_query_parameter->key_len;
     primary_index_id = global_query_parameter->primary_index_id;
 }
 

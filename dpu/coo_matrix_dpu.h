@@ -3,9 +3,11 @@
 #include <mram.h>
 #include <alloc.h>
 #include "../util/coo_matrix.h"
+#include "../util/kv_set.h"
 
 typedef __mram_ptr struct _coo_matrix *coo_matrix_dpu;
 typedef __mram_ptr struct _coo_matrix_v *coo_matrix_v_dpu;
+typedef __mram_ptr struct _kv_set *kv_set_dpu;
 
 typedef struct _coo_matrix_dpu_set
 {
@@ -43,5 +45,7 @@ __mram_ptr coo_matrix_elem *coo_matrix_dpu_next_elem(coo_matrix_dpu_iterator *it
 // coo_matrix_v_dpu_iterator api
 coo_matrix_v_dpu_iterator *coo_matrix_v_dpu_iterator_init(coo_matrix_v_dpu_iterator *it, coo_matrix_v_dpu coo);
 __mram_ptr coo_matrix_v_elem *coo_matrix_v_dpu_next_elem(coo_matrix_v_dpu_iterator *it);
+
+void kv_set_dpu_dump(const kv_set_dpu kvsd);
 
 #endif

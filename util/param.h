@@ -13,6 +13,8 @@ typedef struct query_param
 {
     opType type;
     PRIMARY_INDEX_ID primary_index_id;
+    uint32_t key_len;
+    uint32_t nonsense;
 } query_param;
 
 #endif

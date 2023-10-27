@@ -23,8 +23,8 @@ void dpu_push_info_free(dpu_push_info *push_info);
 
 // operations
 void dpu_push_build_package_primary_index_create(dpu_push_info *push_info, PRIMARY_INDEX_ID id);
-void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMARY_INDEX_ID id, uint32_t *keys, uint64_t *vals, uint32_t batch_size);
-void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, uint32_t *keys, uint32_t batch_size);
+void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint64_t *vals, uint32_t batch_size);
+void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size);
 void dpu_push_package(dpu_push_info *push_info, struct dpu_set_t dpu_set);
 
 #endif
