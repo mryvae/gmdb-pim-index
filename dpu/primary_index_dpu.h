@@ -17,8 +17,8 @@
 typedef struct _primary_index_entry
 {
     int32_t key;
-    uint64_t val;
     __mram_ptr struct _primary_index_entry *next;
+    uint64_t val;
 } primary_index_entry;
 
 typedef struct _primary_index_dpu

@@ -2,6 +2,6 @@
 
 int main()
 {
-    test_primary_index();
+    test_dpu_index_manager();
     return 0;
 }

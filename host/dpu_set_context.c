@@ -12,6 +12,7 @@ dpu_set_context *dpu_set_context_create()
     }
 
     set->dpu_set_id = dpu_set_allocated_num;
+    set->nr_pre_load_index = 0;
     dpu_set_allocated_num++;
     pthread_mutex_init(&(set->lock), NULL);
 
@@ -21,6 +22,7 @@ dpu_set_context *dpu_set_context_create()
     set->nr_slave_tasklets = NR_SLAVE_TASKLETS;
     dpu_push_info_init(&(set->push_info), NR_DPUS);
     dpu_pull_info_init(&(set->pull_info), NR_DPUS);
+    dpu_timer_init(&(set->timer));
 
     return set;
 }
