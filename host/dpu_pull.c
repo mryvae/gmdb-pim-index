@@ -80,9 +80,8 @@ void dpu_pull_coo_results(dpu_pull_info *pull_info, struct dpu_set_t dpu_set)
     DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_FROM_DPU, DPU_MRAM_HEAP_POINTER_NAME, COO_RESULT_OFFSET, align8(length), DPU_XFER_DEFAULT));
 }
 
-void dpu_pull_merge_results(dpu_pull_info *pull_info, uint64_t **vals, uint32_t batch_size)
+void dpu_pull_merge_results(dpu_pull_info *pull_info, uint64_t *vals, uint32_t batch_size)
 {
-    uint64_t *result_vals = malloc(sizeof(uint64_t) * batch_size);
     coo_matrix_v coo_result;
     for (int i = 0; i < NR_DPUS; i++)
     {
@@ -90,8 +89,7 @@ void dpu_pull_merge_results(dpu_pull_info *pull_info, uint64_t **vals, uint32_t 
         for (int j = 0; j < coo_result->nnz; j++)
         {
             // printf("row:%d, col:%ld\n", coo_result->data[j].row, coo_result->data[j].val);
-            result_vals[coo_result->data[j].row] = coo_result->data[j].val;
+            vals[coo_result->data[j].row] = coo_result->data[j].val;
         }
     }
-    *vals = result_vals;
 }

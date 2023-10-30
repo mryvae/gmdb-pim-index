@@ -40,7 +40,7 @@ void primary_index_batch_insert(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     pthread_mutex_unlock(&(set->lock));
 }
 
-void primary_index_batch_lookup(dpu_set_context *set, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size, uint64_t **vals)
+void primary_index_batch_lookup(dpu_set_context *set, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size, uint64_t *vals)
 {
     int64_t begin, last, cur;
     pthread_mutex_lock(&(set->lock));
@@ -75,21 +75,19 @@ void primary_index_batch_lookup(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     pthread_mutex_unlock(&(set->lock));
 }
 
-PRIMARY_INDEX_ID primary_index_create_v1()
+void primary_index_create_v1(PRIMARY_INDEX_ID id)
 {
-    PRIMARY_INDEX_ID id = dpu_index_manager_create_index();
+    if (dpu_index_manager_create_index(id) == DPU_INDEX_MANAGER_ERR)
+    {
+        return;
+    }
     printf("id: %d\n", id);
     dpu_set_context *dpu_set;
-    if (id >= 0)
+    dpu_set = dpu_index_manager_get_dpu_set(id);
+    if (dpu_set)
     {
-        dpu_set = dpu_index_manager_get_dpu_set(id);
-
-        if (dpu_set)
-        {
-            primary_index_create(dpu_set, id);
-        }
+        primary_index_create(dpu_set, id);
     }
-    return id;
 }
 
 void primary_index_batch_insert_v1(PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint64_t *vals, uint32_t batch_size)
@@ -102,7 +100,7 @@ void primary_index_batch_insert_v1(PRIMARY_INDEX_ID id, char **keys, uint32_t ke
     }
 }
 
-void primary_index_batch_lookup_v1(PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size, uint64_t **vals)
+void primary_index_batch_lookup_v1(PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size, uint64_t *vals)
 {
     dpu_set_context *dpu_set;
     dpu_set = dpu_index_manager_get_dpu_set(id);
