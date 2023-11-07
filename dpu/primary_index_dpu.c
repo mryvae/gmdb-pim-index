@@ -115,13 +115,13 @@ int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len
 
         mram_write((void *)&entry_buffer, (__mram_ptr void *)(pid->buckets + bucket_id), sizeof(primary_index_entry));
     }
-    else if (entry_buffer.key >= 0)
+    else
     {
         while (entry_buffer.next)
         {
             last = entry_buffer;
             mram_read((__mram_ptr void *)(entry_buffer.next), (void *)&entry_buffer, sizeof(primary_index_entry));
-            if (entry_buffer.key == key)
+            if (_key_compare(entry_buffer.key, entry_buffer.key_len, key, key_len))
             {
                 // mutex_lock(col_index_entry_allocator_mutex);
                 block_mram_allocator_free(allocator, last.next);

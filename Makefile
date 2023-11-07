@@ -10,6 +10,8 @@ DPU_HEADERS=$(wildcard dpu/*.h)
 
 UTIL_HEADERS=$(wildcard util/*.h)
 UTIL_SOURCES=$(wildcard util/*.c)
+UPMEM_HEADERS=$(wildcard upmemInterface/*.h)
+UPMEM_SOURCES=$(wildcard upmemInterface/*.o)
 
 CHECK_FORMAT_FILES=${HOST_SOURCES} ${HOST_HEADERS} ${DPU_SOURCES} ${DPU_HEADERS} ${UTIL_HEADERS} ${UTIL_SOURCES}
 CHECK_FORMAT_DEPENDENCIES=$(addsuffix -check-format,${CHECK_FORMAT_FILES})
@@ -30,8 +32,8 @@ clean:
 CFLAGS=-g -O2 -std=gnu99 -fgnu89-inline `dpu-pkg-config --cflags --libs dpu` -DNR_TASKLETS=${NR_TASKLETS} -pthread
 LDFLAGS=`dpu-pkg-config --libs dpu`
 
-${HOST_BINARY}: ${HOST_SOURCES} ${HOST_HEADERS} ${UTIL_HEADERS} ${UTIL_SOURCES} ${DPU_BINARY}
-	$(CC) -o $@ ${HOST_SOURCES} ${UTIL_SOURCES} $(LDFLAGS) $(CFLAGS) -DDPU_BINARY=\"$(realpath ${DPU_BINARY})\"
+${HOST_BINARY}: ${HOST_SOURCES} ${HOST_HEADERS} ${UTIL_HEADERS} ${UTIL_SOURCES} ${UPMEM_HEADERS} ${UPMEM_SOURCES} ${DPU_BINARY}
+	$(CC) -o $@ ${HOST_SOURCES} ${UTIL_SOURCES} ${UPMEM_SOURCES} $(LDFLAGS) $(CFLAGS) -DDPU_BINARY=\"$(realpath ${DPU_BINARY})\"
 
 ###
 ### DPU BINARY

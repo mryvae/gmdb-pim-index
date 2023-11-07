@@ -55,6 +55,12 @@ void test_primary_index()
 
     gettimeofday(&begin, NULL);
     primary_index_batch_lookup(dpu_set, primary_index_id, keys, 9, batch_size, result_vals);
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%ld\n", result_vals[i]);
+    }
+    primary_index_batch_delete(dpu_set, primary_index_id, keys + 4, 9, batch_size);
+    primary_index_batch_lookup(dpu_set, primary_index_id, keys, 9, batch_size, result_vals);
     gettimeofday(&end, NULL);
     printf("sum time: %d ns\n", (end.tv_sec * 1000000 + end.tv_usec) - (begin.tv_sec * 1000000 + begin.tv_usec));
     for (int i = 0; i < 10; i++)

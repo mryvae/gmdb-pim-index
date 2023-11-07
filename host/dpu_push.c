@@ -3,11 +3,11 @@
 static inline unsigned int _hash_function_int(unsigned int key)
 {
     key += ~(key << 15);
-    key ^=  (key >> 10);
-    key +=  (key << 3);
-    key ^=  (key >> 6);
+    key ^= (key >> 10);
+    key += (key << 3);
+    key ^= (key >> 6);
     key += ~(key << 11);
-    key ^=  (key >> 16);
+    key ^= (key >> 16);
     return key;
 }
 
@@ -129,6 +129,60 @@ void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMA
     }
 }
 
+void dpu_push_build_package_primary_index_delete(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size)
+{
+    uint32_t nr_dpus = push_info->nr_dpus;
+    int32_t dpu_id;
+
+    push_package *packages = push_info->packages;
+    kv_elem *kv_data[NR_DPUS];
+    uint32_t nnz[NR_DPUS];
+    uint32_t capility[NR_DPUS];
+    query_param *query;
+
+    dpu_push_info_reset(push_info);
+
+    for (int i = 0; i < NR_DPUS; i++)
+    {
+        query = push_package_query_get(&(packages[i]));
+        query->type = PRIMARY_INDEX_DELETE;
+        query->primary_index_id = id;
+        query->key_len = key_len;
+    }
+
+    kv_set kvs;
+    for (int i = 0; i < NR_DPUS; i++)
+    {
+        kvs = push_package_kv_init(&(packages[i]));
+        if (kvs)
+        {
+            kv_data[i] = kvs->data;
+            nnz[i] = 0;
+            capility[i] = kvs->capacity;
+        }
+        else
+        {
+            printf("error: dpu_push_build_package_primary_index_insert\n");
+            return;
+        }
+    }
+    for (int i = 0; i < batch_size; i++)
+    {
+        dpu_id = _hash_function(keys[i], key_len) % NR_DPUS;
+        memcpy(kv_data[dpu_id][nnz[dpu_id]].key, keys[i], key_len);
+        nnz[dpu_id]++;
+    }
+
+    for (int i = 0; i < NR_DPUS; i++)
+    {
+        kvs = push_package_kv_get(&(packages[i]));
+        if (kvs)
+        {
+            kvs->nnz = nnz[i];
+        }
+    }
+}
+
 void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size)
 {
     uint32_t nr_dpus = push_info->nr_dpus;
@@ -176,7 +230,7 @@ void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMA
 
     for (int i = 0; i < NR_DPUS; i++)
     {
-        printf("%d ",nnz[i]);
+        printf("%d ", nnz[i]);
         kvs = push_package_kv_get(&(packages[i]));
         if (kvs)
         {
