@@ -29,7 +29,7 @@ clean:
 ###
 ### HOST APPLICATION
 ###
-CFLAGS=-g -O2 -std=gnu99 -fgnu89-inline `dpu-pkg-config --cflags --libs dpu` -DNR_TASKLETS=${NR_TASKLETS} -pthread
+CFLAGS=-g -O2 -std=gnu99 -fgnu89-inline `dpu-pkg-config --cflags --libs dpu` -DNR_TASKLETS=${NR_TASKLETS} -pthread -lstdc++
 LDFLAGS=`dpu-pkg-config --libs dpu`
 
 ${HOST_BINARY}: ${HOST_SOURCES} ${HOST_HEADERS} ${UTIL_HEADERS} ${UTIL_SOURCES} ${UPMEM_HEADERS} ${UPMEM_SOURCES} ${DPU_BINARY}

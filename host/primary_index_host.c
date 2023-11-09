@@ -4,7 +4,7 @@ void primary_index_create(dpu_set_context *set, PRIMARY_INDEX_ID id)
 {
     pthread_mutex_lock(&(set->lock));
     dpu_push_build_package_primary_index_create(&(set->push_info), id);
-    dpu_push_package(&(set->push_info), set->dpu_set);
+    dpu_push_package(&(set->push_info), set->interface);
     dpu_set_context_dpu_run(set);
     pthread_mutex_unlock(&(set->lock));
 }
@@ -21,7 +21,7 @@ void primary_index_batch_insert(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     last = cur;
     cur = usec();
     set->timer.load_balance_interval += cur - last;
-    dpu_push_package(&(set->push_info), set->dpu_set);
+    dpu_push_package(&(set->push_info), set->interface);
     last = cur;
     cur = usec();
     set->timer.push_interval += cur - last;
@@ -52,7 +52,7 @@ void primary_index_batch_delete(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     last = cur;
     cur = usec();
     set->timer.load_balance_interval += cur - last;
-    dpu_push_package(&(set->push_info), set->dpu_set);
+    dpu_push_package(&(set->push_info), set->interface);
     last = cur;
     cur = usec();
     set->timer.push_interval += cur - last;
@@ -83,7 +83,7 @@ void primary_index_batch_lookup(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     last = cur;
     cur = usec();
     set->timer.load_balance_interval += cur - last;
-    dpu_push_package(&(set->push_info), set->dpu_set);
+    dpu_push_package(&(set->push_info), set->interface);
     last = cur;
     cur = usec();
     set->timer.push_interval += cur - last;
@@ -92,8 +92,8 @@ void primary_index_batch_lookup(dpu_set_context *set, PRIMARY_INDEX_ID id, char 
     cur = usec();
     set->timer.run_interval += cur - last;
     // dpu_set_context_log_read(set);
-    dpu_pull_coo_metadatas(&(set->pull_info), set->dpu_set);
-    dpu_pull_coo_results(&(set->pull_info), set->dpu_set);
+    dpu_pull_coo_metadatas(&(set->pull_info), set->interface);
+    dpu_pull_coo_results(&(set->pull_info), set->interface);
     last = cur;
     cur = usec();
     set->timer.pull_interval += cur - last;

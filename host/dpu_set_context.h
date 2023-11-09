@@ -8,6 +8,7 @@
 #include "dpu_push.h"
 #include "dpu_pull.h"
 #include "dpu_timer.h"
+#include "../upmemInterface/upmem_direct_c.h"
 
 #define DEFAULT_COO_RESULTS_CAPACITY 1024
 #define MAX_NUM_PRE_LOAD_PRIMARY_INDEX_PER_DPU_SET 16
@@ -22,7 +23,8 @@ typedef struct _dpu_set_context
     pthread_mutex_t lock;
     volatile int nr_pre_load_index;
     DPU_SET_ID dpu_set_id;
-    struct dpu_set_t dpu_set;
+    // struct dpu_set_t dpu_set;
+    XDPI interface;
     uint32_t nr_dpus;
     uint32_t nr_slave_tasklets;
     dpu_push_info push_info;

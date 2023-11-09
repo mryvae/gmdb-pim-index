@@ -42,18 +42,25 @@ void dpu_pull_info_free(dpu_pull_info *pull_info)
     }
 }
 
-void dpu_pull_coo_metadatas(dpu_pull_info *pull_info, struct dpu_set_t dpu_set)
+void dpu_pull_coo_metadatas(dpu_pull_info *pull_info, XDPI interface)
 {
-    struct dpu_set_t dpu;
-    uint32_t each_dpu;
-    DPU_FOREACH(dpu_set, dpu, each_dpu)
+    uint8_t *buffers[NR_DPUS];
+    for (int i = 0; i < NR_DPUS; i++)
     {
-        DPU_ASSERT(dpu_prepare_xfer(dpu, pull_info->coo_metadatas[each_dpu]));
+        buffers[i] = pull_info->coo_metadatas[i];
     }
-    DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_FROM_DPU, DPU_MRAM_HEAP_POINTER_NAME, PULL_PACKAGE_METADATA_OFFSET, sizeof(pull_package_metadata), DPU_XFER_DEFAULT));
+    ReceiveFromPIM(interface, buffers, DPU_MRAM_HEAP_POINTER_NAME, PULL_PACKAGE_METADATA_OFFSET, sizeof(pull_package_metadata), 0);
+
+    // struct dpu_set_t dpu;
+    // uint32_t each_dpu;
+    // DPU_FOREACH(dpu_set, dpu, each_dpu)
+    // {
+    //     DPU_ASSERT(dpu_prepare_xfer(dpu, pull_info->coo_metadatas[each_dpu]));
+    // }
+    // DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_FROM_DPU, DPU_MRAM_HEAP_POINTER_NAME, PULL_PACKAGE_METADATA_OFFSET, sizeof(pull_package_metadata), DPU_XFER_DEFAULT));
 }
 
-void dpu_pull_coo_results(dpu_pull_info *pull_info, struct dpu_set_t dpu_set)
+void dpu_pull_coo_results(dpu_pull_info *pull_info, XDPI interface)
 {
     struct dpu_set_t dpu;
     uint32_t each_dpu, length, max_capacity = 0;
@@ -71,13 +78,18 @@ void dpu_pull_coo_results(dpu_pull_info *pull_info, struct dpu_set_t dpu_set)
         printf("pull buf exceeds!\n");
         return;
     }
-
-    DPU_FOREACH(dpu_set, dpu, each_dpu)
+    uint8_t *buffers[NR_DPUS];
+    for (int i = 0; i < NR_DPUS; i++)
     {
-        DPU_ASSERT(dpu_prepare_xfer(dpu, pull_info->coo_results[each_dpu]));
+        buffers[i] = pull_info->coo_results[i];
     }
-    length = sizeof(struct _coo_matrix_v) + sizeof(coo_matrix_v_elem) * max_capacity;
-    DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_FROM_DPU, DPU_MRAM_HEAP_POINTER_NAME, COO_RESULT_OFFSET, align8(length), DPU_XFER_DEFAULT));
+    ReceiveFromPIM(interface, buffers, DPU_MRAM_HEAP_POINTER_NAME, COO_RESULT_OFFSET, align8(length), 0);
+    // DPU_FOREACH(dpu_set, dpu, each_dpu)
+    // {
+    //     DPU_ASSERT(dpu_prepare_xfer(dpu, pull_info->coo_results[each_dpu]));
+    // }
+    // length = sizeof(struct _coo_matrix_v) + sizeof(coo_matrix_v_elem) * max_capacity;
+    // DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_FROM_DPU, DPU_MRAM_HEAP_POINTER_NAME, COO_RESULT_OFFSET, align8(length), DPU_XFER_DEFAULT));
 }
 
 void dpu_pull_merge_results(dpu_pull_info *pull_info, uint64_t *vals, uint32_t batch_size)

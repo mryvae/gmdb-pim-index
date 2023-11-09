@@ -4,6 +4,7 @@
 typedef struct XDirectPIMInterface XDirectPimInterface;
 typedef XDirectPimInterface* XDPI;
 
+XDirectPimInterface* newDirectPIMInterface(void);
 void deleteDirectPIMInterface(XDirectPimInterface* self);
 void allocate(XDirectPimInterface* self, uint32_t nr_of_ranks, char* binary);
 void deallocate(XDPI self);

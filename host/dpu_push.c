@@ -240,7 +240,7 @@ void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMA
     printf("\n");
 }
 
-void dpu_push_package(dpu_push_info *push_info, struct dpu_set_t dpu_set)
+void dpu_push_package(dpu_push_info *push_info, XDPI interface)
 {
     push_package *packages = push_info->packages;
     uint32_t nr_dpus = push_info->nr_dpus;
@@ -256,15 +256,22 @@ void dpu_push_package(dpu_push_info *push_info, struct dpu_set_t dpu_set)
         }
     }
     printf("max_package_size: %u\n", max_package_size);
-    struct dpu_set_t dpu;
-    uint32_t each_dpu;
 
-    DPU_FOREACH(dpu_set, dpu, each_dpu)
+    uint8_t *buffers[NR_DPUS];
+    for (int i = 0; i < NR_DPUS; i++)
     {
-        DPU_ASSERT(dpu_prepare_xfer(dpu, &(packages[each_dpu])));
+        buffers[i] = &(packages[i]);
     }
-    DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_TO_DPU, DPU_MRAM_HEAP_POINTER_NAME, PUSH_PACKAGE_OFFSET,
-                             align8(max_package_size), DPU_XFER_DEFAULT));
+    SendToPIM(interface, buffers, DPU_MRAM_HEAP_POINTER_NAME, PUSH_PACKAGE_OFFSET, align8(max_package_size), 0);
+    // struct dpu_set_t dpu;
+    // uint32_t each_dpu;
+
+    // DPU_FOREACH(dpu_set, dpu, each_dpu)
+    // {
+    //     DPU_ASSERT(dpu_prepare_xfer(dpu, &(packages[each_dpu])));
+    // }
+    // DPU_ASSERT(dpu_push_xfer(dpu_set, DPU_XFER_TO_DPU, DPU_MRAM_HEAP_POINTER_NAME, PUSH_PACKAGE_OFFSET,
+    //                          align8(max_package_size), DPU_XFER_DEFAULT));
 
     // push_package_int_steam_dump(&(push_info->packages[0]));
 }
