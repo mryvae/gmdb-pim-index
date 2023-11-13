@@ -43,11 +43,17 @@ add_custom_target(${DPU_TASK_NAME} ALL
 install(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${DPU_TASK_NAME} DESTINATION bin)
 
 ## build util lib
+unset(CMAKE_C_FLAGS)
 set(PIM_INDEX_UTIL_LIB pim-index-util)
 add_library(${PIM_INDEX_UTIL_LIB} SHARED ${UTIL_SOURCES})
 target_include_directories(${PIM_INDEX_UTIL_LIB} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/util)
+
 set_target_properties(${PIM_INDEX_UTIL_LIB} PROPERTIES COMPILE_FLAGS "${UTIL_FLAG}")
 install(TARGETS ${PIM_INDEX_UTIL_LIB} LIBRARY DESTINATION lib)
+
+get_target_property(C_FLAGS ${PIM_INDEX_UTIL_LIB} COMPILE_OPTIONS)
+list(REMOVE_ITEM C_FLAGS "-fvisibility=hidden")
+set_target_properties(${PIM_INDEX_UTIL_LIB} PROPERTIES COMPILE_OPTIONS ${C_FLAGS})
 
 # build host
 set(UPMEM_HOST_NAME host_app)
