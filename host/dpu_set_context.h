@@ -31,7 +31,7 @@ typedef struct _dpu_set_context
 } dpu_set_context;
 
 // dpu_set_context
-dpu_set_context *dpu_set_context_create();
+dpu_set_context *dpu_set_context_create(void);
 void dpu_set_context_free(dpu_set_context *set);
 void dpu_set_context_dpu_run(dpu_set_context *set);
 void dpu_set_context_log_read(dpu_set_context *set);

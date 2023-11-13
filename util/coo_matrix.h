@@ -84,7 +84,7 @@ coo_matrix_v_elem *coo_matrix_v_next_elem(coo_matrix_v_iterator *it);
 void coo_matrix_dump(const coo_matrix coo);
 void coo_matrix_dump_head(const coo_matrix coo, uint32_t num);
 void coo_matrix_v_dump(const coo_matrix_v coo);
-void coo_matrix_test();
+void coo_matrix_test(void);
 coo_matrix coo_matrix_merge(const coo_matrix *coo_results, uint32_t num);
 coo_matrix coo_matrix_add(coo_matrix A, coo_matrix B);
 coo_matrix coo_matrix_sub(coo_matrix A, coo_matrix B);

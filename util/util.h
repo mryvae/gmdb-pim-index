@@ -11,9 +11,7 @@
 #define BLOCK_SIZE(id, p, n) \
 	(BLOCK_LOW((id) + 1, p, n) - BLOCK_LOW((id), p, n))
 
-inline uint32_t align8(uint32_t s);
-
-uint32_t next_power(uint32_t size);
+// uint32_t next_power(uint32_t size);
 
 char *itoa_t(int num, char *str);
 
