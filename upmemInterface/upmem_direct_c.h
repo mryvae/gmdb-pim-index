@@ -1,12 +1,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-typedef struct XDirectPIMInterface XDirectPimInterface;
-typedef XDirectPimInterface* XDPI;
-
-XDirectPimInterface* newDirectPIMInterface(void);
-void deleteDirectPIMInterface(XDirectPimInterface* self);
-void allocate(XDirectPimInterface* self, uint32_t nr_of_ranks, char* binary);
+typedef struct XDirectPIMInterface XDirectPIMInterface;
+typedef XDirectPIMInterface* XDPI;
+XDPI newDirectPIMInterface(void);
+void deleteDirectPIMInterface(XDPI self);
+void allocate(XDPI self, uint32_t nr_of_ranks, char* binary);
 void deallocate(XDPI self);
 void Launch(XDPI self, bool async);
 void upmem_sync(XDPI self);
