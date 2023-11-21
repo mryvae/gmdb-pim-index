@@ -20,4 +20,5 @@ void primary_index_create_tasklets_run()
 void primary_index_create_merge()
 {
     // nothing
+    // primary_index_dpu_test(global_primary_index, &global_index_block_mram_allocator);
 }

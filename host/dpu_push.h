@@ -27,6 +27,6 @@ void dpu_push_build_package_primary_index_create(dpu_push_info *push_info, PRIMA
 void dpu_push_build_package_primary_index_insert(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint64_t *vals, uint32_t batch_size);
 void dpu_push_build_package_primary_index_delete(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size);
 void dpu_push_build_package_primary_index_lookup(dpu_push_info *push_info, PRIMARY_INDEX_ID id, char **keys, uint32_t key_len, uint32_t batch_size);
-void dpu_push_package(dpu_push_info *push_info, XDPI interface);
+void dpu_push_package(dpu_push_info *push_info, struct dpu_set_t dpu_set);
 
 #endif

@@ -32,7 +32,10 @@ __mram_ptr void *block_mram_allocator_alloc(block_mram_allocator *allocator)
 {
     allocator->mutex_lock();
     if (allocator->avail <= 0)
+    {
+        allocator->mutex_unlock();
         return NULL;
+    }
     block_id avail = allocator->cache.bitmap_head.first_avail;
     bitmap_cache_set(&(allocator->cache), avail);
     allocator->avail--;

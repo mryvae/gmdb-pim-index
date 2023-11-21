@@ -36,6 +36,9 @@ void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id)
 int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val, block_mram_allocator *allocator);
 int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len, block_mram_allocator *allocator);
 __mram_ptr primary_index_entry *primary_index_dpu_lookup(const primary_index_dpu *pid, char *key, uint32_t key_len);
+void primary_index_dpu_update_with_entry_addr(const primary_index_dpu *pid, __mram_ptr primary_index_entry *entry, uint64_t new_val);
+__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, 
+uint64_t val, block_mram_allocator *allocator);
 void primary_index_dpu_test(primary_index_dpu *pid, block_mram_allocator *allocator);
 
 #endif

@@ -2,7 +2,7 @@
 #define _DPU_INFO_H
 
 #ifndef NR_DPUS
-#define NR_DPUS 64
+#define NR_DPUS 128
 #endif
 
 #ifndef DPU_BINARY
