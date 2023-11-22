@@ -41,7 +41,7 @@ void op_primary_index_insert_tasklets_run()
 
         handle_elem:
             nnz_handled++;
-            primary_index_dpu_insert(global_primary_index, current_elem->key, global_key_len, current_elem->val, &global_index_block_mram_allocator);
+            primary_index_dpu_insert(global_primary_index, current_elem->key, global_key_len, current_elem->val, &global_index_mram_allocator);
         }
         while (nnz_handled < delta_nnz)
         {

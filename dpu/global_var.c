@@ -1,4 +1,4 @@
-#include "global.h"
+#include "global_var.h"
 
 // initial information
 __mram_ptr push_package *global_package = (__mram_ptr push_package *)(DPU_MRAM_HEAP_POINTER + PUSH_PACKAGE_OFFSET);
@@ -21,7 +21,7 @@ __mram_ptr void *global_prestored_primary_index_space_addr[MAX_NUM_PRE_LOAD_PRIM
     PRIMARY_INDEX_SPACE_ADDR8, PRIMARY_INDEX_SPACE_ADDR9, PRIMARY_INDEX_SPACE_ADDR10, PRIMARY_INDEX_SPACE_ADDR11,
     PRIMARY_INDEX_SPACE_ADDR12, PRIMARY_INDEX_SPACE_ADDR13, PRIMARY_INDEX_SPACE_ADDR14, PRIMARY_INDEX_SPACE_ADDR15};
 
-__host block_mram_allocator global_index_block_mram_allocator;
-uint32_t global_index_block_mram_allocator_initial_flag = 0;
+__host linear_mram_allocator global_index_mram_allocator;
+uint32_t global_index_mram_allocator_initial_flag;
 
 coo_matrix_v_dpu global_coo_result = (coo_matrix_v_dpu)(DPU_MRAM_HEAP_POINTER + COO_RESULT_OFFSET);

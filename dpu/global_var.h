@@ -8,7 +8,7 @@
 #include "../util/param.h"
 #include "../util/push_package.h"
 #include "coo_matrix_dpu.h"
-#include "block_mram_alloc.h"
+#include "linear_mram_alloc.h"
 #include "mram_memory.h"
 #include "primary_index_dpu.h"
 
@@ -28,8 +28,8 @@ extern __host uint32_t global_num_pre_load_primary_index;
 extern __host primary_index_dpu global_prestored_primary_index[MAX_NUM_PRE_LOAD_PRIMARY_INDEX];
 extern __mram_ptr void *global_prestored_primary_index_space_addr[MAX_NUM_PRE_LOAD_PRIMARY_INDEX];
 
-extern __host block_mram_allocator global_index_block_mram_allocator;
-extern uint32_t global_index_block_mram_allocator_initial_flag;
+extern __host linear_mram_allocator global_index_mram_allocator;
+extern uint32_t global_index_mram_allocator_initial_flag;
 
 extern coo_matrix_v_dpu global_coo_result;
 

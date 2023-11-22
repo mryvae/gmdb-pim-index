@@ -20,5 +20,6 @@ void primary_index_create_tasklets_run()
 void primary_index_create_merge()
 {
     // nothing
-    // primary_index_dpu_test(global_primary_index, &global_index_block_mram_allocator);
+    // primary_index_dpu_test(global_primary_index, &global_index_mram_allocator);
+    // printf("DPU_MRAM_HEAP_POINTER: %p\n", DPU_MRAM_HEAP_POINTER);
 }

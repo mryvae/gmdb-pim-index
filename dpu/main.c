@@ -1,5 +1,5 @@
 #include <barrier.h>
-#include "global.h"
+#include "global_var.h"
 #include "perfcounter.h"
 #include "push_package_dpu.h"
 #include "../util/util.h"
@@ -15,11 +15,11 @@ BARRIER_INIT(barrier2, NR_TASKLETS);
 void initial()
 {
     mem_reset();
-    if (!global_index_block_mram_allocator_initial_flag)
+    if (!global_index_mram_allocator_initial_flag)
     {
-        block_mram_allocator_init(&global_index_block_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE, sizeof(primary_index_entry),
-                                  allocator_mutex_32_lock, allocator_mutex_32_unlock);
-        global_index_block_mram_allocator_initial_flag = 1;
+        linear_mram_allocator_initial(&global_index_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE,
+                                  linear_allocator_mutex_lock, linear_allocator_mutex_unlock);
+        global_index_mram_allocator_initial_flag = 1;
     }
 
     global_kvsd = push_package_dpu_kv_get();

@@ -7,10 +7,8 @@
 void buckets_mutex_lock(uint32_t bucket_id);
 void buckets_mutex_unlock(uint32_t bucket_id);
 
-void allocator_mutex_32_lock();
-void allocator_mutex_32_unlock();
-void allocator_mutex_16_lock();
-void allocator_mutex_16_unlock();
+void linear_allocator_mutex_lock();
+void linear_allocator_mutex_unlock();
 void result_cache_mutex_lock();
 void result_cache_mutex_unlock();
 void inter_cache_mutex_lock();

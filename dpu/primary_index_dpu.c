@@ -57,7 +57,7 @@ void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id)
     }
 }
 
-int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val, block_mram_allocator *allocator)
+int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val, linear_mram_allocator *allocator)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask, flag = 0;
     // printf("bucket_matrix_slice_dpu_insert_elem: row: %d, col: %d, bucket_id: %d\n", elem->row, elem->col, bucket_id);
@@ -77,9 +77,7 @@ int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len
     else
     {
         __mram_ptr primary_index_entry *entry_buffer_next = entry_buffer.next;
-        // mutex_lock(col_index_entry_allocator_mutex);
-        entry_buffer.next = (__mram_ptr primary_index_entry *)block_mram_allocator_alloc(allocator);
-        // mutex_unlock(col_index_entry_allocator_mutex);
+        entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(allocator, sizeof(primary_index_entry));
 
         mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
         cur = entry_buffer.next;
@@ -95,7 +93,7 @@ int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len
     return PRIMARY_INDEX_OK;
 }
 
-int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len, block_mram_allocator *allocator)
+int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len, linear_mram_allocator *allocator)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask, flag = 0;
     __dma_aligned primary_index_entry entry_buffer;
@@ -123,9 +121,7 @@ int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len
             mram_read((__mram_ptr void *)(entry_buffer.next), (void *)&entry_buffer, sizeof(primary_index_entry));
             if (_key_compare(entry_buffer.key, entry_buffer.key_len, key, key_len))
             {
-                // mutex_lock(col_index_entry_allocator_mutex);
-                block_mram_allocator_free(allocator, last.next);
-                // mutex_unlock(col_index_entry_allocator_mutex);
+                linear_mram_free(allocator, last.next);
                 last.next = entry_buffer.next;
                 mram_write((void *)&last, (__mram_ptr void *)last_ptr, sizeof(primary_index_entry));
                 flag = 1;
@@ -171,19 +167,20 @@ __mram_ptr primary_index_entry *primary_index_dpu_lookup(const primary_index_dpu
     return res;
 }
 
-void primary_index_dpu_update_with_entry_addr(const primary_index_dpu *pid, __mram_ptr primary_index_entry *entry, uint64_t new_val)
+void primary_index_dpu_update_with_entry_addr(const primary_index_dpu *pid, __mram_ptr primary_index_entry *entry, metadata new_val_meta, uint64_t new_val)
 {
     __dma_aligned primary_index_entry entry_buffer;
     mram_read((__mram_ptr void *)entry, (void *)&entry_buffer, sizeof(primary_index_entry));
     int32_t bucket_id = _hash_function(entry_buffer.key, entry_buffer.key_len) & pid->sizemask;
     buckets_mutex_lock(bucket_id);
     entry_buffer.val = new_val;
+    entry_buffer.val_meta = new_val_meta;
     mram_write((void *)&entry_buffer, (__mram_ptr void *)entry, sizeof(primary_index_entry));
     buckets_mutex_unlock(bucket_id);
 }
 
-__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len,
-                                                                uint64_t val, block_mram_allocator *allocator)
+__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, metadata val_meta, uint64_t val,
+                                                                linear_mram_allocator *allocator)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask;
     // printf("bucket_id: %d\n", bucket_id);
@@ -219,15 +216,14 @@ __mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dp
             _wram_memcpy(entry_buffer.key, key, key_len);
             entry_buffer.key_len = key_len;
             entry_buffer.val = val;
+            entry_buffer.val_meta = val_meta;
             entry_buffer.next = NULL;
             mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
         }
         else
         {
             __mram_ptr primary_index_entry *entry_buffer_next = entry_buffer.next;
-            // mutex_lock(col_index_entry_allocator_mutex);
-            entry_buffer.next = (__mram_ptr primary_index_entry *)block_mram_allocator_alloc(allocator);
-            // mutex_unlock(col_index_entry_allocator_mutex);
+            entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(allocator, sizeof(primary_index_entry));
 
             mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
             cur = entry_buffer.next;
@@ -235,6 +231,7 @@ __mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dp
             _wram_memcpy(entry_buffer.key, key, key_len);
             entry_buffer.key_len = key_len;
             entry_buffer.val = val;
+            entry_buffer.val_meta = val_meta;
             entry_buffer.next = entry_buffer_next;
             mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
         }
@@ -248,13 +245,16 @@ static void primary_index_entry_dump(__mram_ptr primary_index_entry *entry)
 {
     __dma_aligned primary_index_entry entry_buffer;
     mram_read((__mram_ptr void *)entry, (void *)&entry_buffer, sizeof(primary_index_entry));
-    printf("key: %s, val: %ld\n", entry_buffer.key, entry_buffer.val);
+    printf("key: %s, type: %u, id: %u, val: %ld\n", entry_buffer.key, entry_buffer.val_meta.type,
+           entry_buffer.val_meta.id, entry_buffer.val);
 }
 
-void primary_index_dpu_test(primary_index_dpu *pid, block_mram_allocator *allocator)
+void primary_index_dpu_test(primary_index_dpu *pid, linear_mram_allocator *allocator)
 {
     int key_len = 3;
     char key1[16] = "111";
+    metadata val_meta = {2, 110};
+    metadata new_val_meta = {2, 100};
     uint64_t val1 = 1;
     char key2[16] = "222";
     uint64_t val2 = 2;
@@ -265,34 +265,34 @@ void primary_index_dpu_test(primary_index_dpu *pid, block_mram_allocator *alloca
     char key_empty[16] = "555";
     __mram_ptr primary_index_entry *entry;
 
-    primary_index_dpu_get_or_insert(pid, key1, key_len, val1, allocator);
-    primary_index_dpu_get_or_insert(pid, key2, key_len, val2, allocator);
-    primary_index_dpu_get_or_insert(pid, key3, key_len, val3, allocator);
-    primary_index_dpu_get_or_insert(pid, key4, key_len, val4, allocator);
+    primary_index_dpu_get_or_insert(pid, key1, key_len, val_meta, val1, allocator);
+    primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, val2, allocator);
+    primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, val3, allocator);
+    primary_index_dpu_get_or_insert(pid, key4, key_len, val_meta, val4, allocator);
 
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
-    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0, allocator);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
-    primary_index_dpu_update_with_entry_addr(pid, entry, 0);
-    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, 0, allocator);
+    primary_index_dpu_update_with_entry_addr(pid, entry, new_val_meta, 0);
+    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0, allocator);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
-    primary_index_dpu_update_with_entry_addr(pid, entry, 0);
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, 0, allocator);
+    primary_index_dpu_update_with_entry_addr(pid, entry, new_val_meta, 0);
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
     if (entry)
     {
         primary_index_entry_dump(entry);
