@@ -1,5 +1,4 @@
 #include "dpu_push.h"
-#include "../libHash/xxhash.h"
 
 static inline unsigned int _hash_function_int(unsigned int key)
 {
@@ -14,14 +13,14 @@ static inline unsigned int _hash_function_int(unsigned int key)
 
 static inline unsigned int _hash_function(char *buf, int len)
 {
-    // unsigned int hash = 5381;
+    unsigned int hash = 5381;
 
-    // while (len--)
-    //     hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
-    // return _hash_function_int(hash);
-    XXH32_hash_t const seed = 0;
-    XXH32_hash_t hash = XXH32(buf, len, seed);
-    return (unsigned int)hash;
+    while (len--)
+        hash = ((hash << 5) + hash) + (*buf++); /* hash * 33 + c */
+    return _hash_function_int(hash);
+    // XXH32_hash_t const seed = 0;
+    // XXH32_hash_t hash = XXH32(buf, len, seed);
+    // return (unsigned int)hash;
 }
 
 dpu_push_info *dpu_push_info_init(dpu_push_info *push_info, uint32_t nr_dpus)

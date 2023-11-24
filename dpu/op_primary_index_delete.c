@@ -41,7 +41,7 @@ void op_primary_index_delete_tasklets_run()
 
         handle_elem:
             nnz_handled++;
-            primary_index_dpu_delete(global_primary_index, current_elem->key, global_key_len, &global_index_mram_allocator);
+            primary_index_dpu_delete(global_primary_index, current_elem->key, global_key_len);
         }
         while (nnz_handled < minus_nnz)
         {

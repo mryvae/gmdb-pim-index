@@ -1,5 +1,6 @@
 #include "primary_index_dpu.h"
 #include "global_mutex.h"
+#include "global_var.h"
 
 static inline _wram_memcpy(char *dest, char *src, uint32_t len)
 {
@@ -57,7 +58,21 @@ void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id)
     }
 }
 
-int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val, linear_mram_allocator *allocator)
+primary_index_dpu *primary_index_dpu_check(uint32_t index_id)
+{
+    primary_index_dpu * index = NULL;
+    for (int j = 0; j < global_num_pre_load_primary_index; j++)
+    {
+        if (primary_index_id == global_prestored_primary_index[j].index_id)
+        {
+            global_primary_index = &(global_prestored_primary_index[j]);
+            break;
+        }
+    }
+    return index;
+}
+
+int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask, flag = 0;
     // printf("bucket_matrix_slice_dpu_insert_elem: row: %d, col: %d, bucket_id: %d\n", elem->row, elem->col, bucket_id);
@@ -77,7 +92,7 @@ int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len
     else
     {
         __mram_ptr primary_index_entry *entry_buffer_next = entry_buffer.next;
-        entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(allocator, sizeof(primary_index_entry));
+        entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(&global_index_mram_allocator, sizeof(primary_index_entry));
 
         mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
         cur = entry_buffer.next;
@@ -93,7 +108,7 @@ int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len
     return PRIMARY_INDEX_OK;
 }
 
-int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len, linear_mram_allocator *allocator)
+int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask, flag = 0;
     __dma_aligned primary_index_entry entry_buffer;
@@ -121,7 +136,7 @@ int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len
             mram_read((__mram_ptr void *)(entry_buffer.next), (void *)&entry_buffer, sizeof(primary_index_entry));
             if (_key_compare(entry_buffer.key, entry_buffer.key_len, key, key_len))
             {
-                linear_mram_free(allocator, last.next);
+                linear_mram_free(&global_index_mram_allocator, last.next);
                 last.next = entry_buffer.next;
                 mram_write((void *)&last, (__mram_ptr void *)last_ptr, sizeof(primary_index_entry));
                 flag = 1;
@@ -179,8 +194,7 @@ void primary_index_dpu_update_with_entry_addr(const primary_index_dpu *pid, __mr
     buckets_mutex_unlock(bucket_id);
 }
 
-__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, metadata val_meta, uint64_t val,
-                                                                linear_mram_allocator *allocator)
+__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, metadata val_meta, uint64_t val)
 {
     int32_t bucket_id = _hash_function(key, key_len) & pid->sizemask;
     // printf("bucket_id: %d\n", bucket_id);
@@ -223,7 +237,7 @@ __mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dp
         else
         {
             __mram_ptr primary_index_entry *entry_buffer_next = entry_buffer.next;
-            entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(allocator, sizeof(primary_index_entry));
+            entry_buffer.next = (__mram_ptr primary_index_entry *)linear_mram_alloc(&global_index_mram_allocator, sizeof(primary_index_entry));
 
             mram_write((void *)&entry_buffer, (__mram_ptr void *)(cur), sizeof(primary_index_entry));
             cur = entry_buffer.next;
@@ -249,7 +263,7 @@ static void primary_index_entry_dump(__mram_ptr primary_index_entry *entry)
            entry_buffer.val_meta.id, entry_buffer.val);
 }
 
-void primary_index_dpu_test(primary_index_dpu *pid, linear_mram_allocator *allocator)
+void primary_index_dpu_test(primary_index_dpu *pid)
 {
     int key_len = 3;
     char key1[16] = "111";
@@ -265,34 +279,34 @@ void primary_index_dpu_test(primary_index_dpu *pid, linear_mram_allocator *alloc
     char key_empty[16] = "555";
     __mram_ptr primary_index_entry *entry;
 
-    primary_index_dpu_get_or_insert(pid, key1, key_len, val_meta, val1, allocator);
-    primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, val2, allocator);
-    primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, val3, allocator);
-    primary_index_dpu_get_or_insert(pid, key4, key_len, val_meta, val4, allocator);
+    primary_index_dpu_get_or_insert(pid, key1, key_len, val_meta, val1);
+    primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, val2);
+    primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, val3);
+    primary_index_dpu_get_or_insert(pid, key4, key_len, val_meta, val4);
 
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
-    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0, allocator);
-    if (entry)
-    {
-        primary_index_entry_dump(entry);
-    }
-    primary_index_dpu_update_with_entry_addr(pid, entry, new_val_meta, 0);
-    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0, allocator);
-    if (entry)
-    {
-        primary_index_entry_dump(entry);
-    }
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0);
     if (entry)
     {
         primary_index_entry_dump(entry);
     }
     primary_index_dpu_update_with_entry_addr(pid, entry, new_val_meta, 0);
-    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0, allocator);
+    entry = primary_index_dpu_get_or_insert(pid, key3, key_len, val_meta, 0);
+    if (entry)
+    {
+        primary_index_entry_dump(entry);
+    }
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0);
+    if (entry)
+    {
+        primary_index_entry_dump(entry);
+    }
+    primary_index_dpu_update_with_entry_addr(pid, entry, new_val_meta, 0);
+    entry = primary_index_dpu_get_or_insert(pid, key2, key_len, val_meta, 0);
     if (entry)
     {
         primary_index_entry_dump(entry);

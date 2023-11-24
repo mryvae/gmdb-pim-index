@@ -40,12 +40,12 @@ typedef struct _primary_index_dpu
 
 void primary_index_dpu_init(primary_index_dpu *pid, __mram_ptr primary_index_entry *buckets_addr, PRIMARY_INDEX_ID index_id, uint32_t buckets_size);
 void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id);
-int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val, linear_mram_allocator *allocator);
-int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len, linear_mram_allocator *allocator);
+primary_index_dpu *primary_index_dpu_check(uint32_t index_id);
+int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val);
+int primary_index_dpu_delete(primary_index_dpu *pid, char *key, uint32_t key_len);
 __mram_ptr primary_index_entry *primary_index_dpu_lookup(const primary_index_dpu *pid, char *key, uint32_t key_len);
 void primary_index_dpu_update_with_entry_addr(const primary_index_dpu *pid, __mram_ptr primary_index_entry *entry, metadata new_val_meta, uint64_t new_val);
-__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, metadata val_meta, uint64_t val, 
-                                                                linear_mram_allocator *allocator);
-void primary_index_dpu_test(primary_index_dpu *pid, linear_mram_allocator *allocator);
+__mram_ptr primary_index_entry *primary_index_dpu_get_or_insert(primary_index_dpu *pid, char *key, uint32_t key_len, metadata val_meta, uint64_t val);
+void primary_index_dpu_test(primary_index_dpu *pid);
 
 #endif
