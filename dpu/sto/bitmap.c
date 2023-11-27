@@ -1,5 +1,5 @@
 #include "bitmap.h"
-#include "../util/util.h"
+#include "../../util/util.h"
 
 #define BITMAP_INIT_BUFFER_SIZE 16
 #define INT_BITS 32

@@ -1,7 +1,7 @@
 #ifndef _CACHE_H
 #define _CACHE_H
 
-#include "coo_matrix_dpu.h"
+#include "../sto/coo_matrix_dpu.h"
 
 #define RESULT_CACHE_SIZE 16
 

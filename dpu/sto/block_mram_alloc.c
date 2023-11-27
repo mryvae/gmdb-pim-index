@@ -1,5 +1,5 @@
 #include "block_mram_alloc.h"
-#include "../util/util.h"
+#include "../../util/util.h"
 
 void block_mram_allocator_init(block_mram_allocator *allocator, __mram_ptr void *start, uint32_t mram_size,
                                uint32_t block_size, void (*mutex_lock)(), void (*mutex_unlock)())

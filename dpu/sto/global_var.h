@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <mram.h>
 #include <alloc.h>
-#include "../util/param.h"
-#include "../util/push_package.h"
+#include "../../util/param.h"
+#include "../../util/push_package.h"
 #include "coo_matrix_dpu.h"
 #include "linear_mram_alloc.h"
 #include "mram_memory.h"

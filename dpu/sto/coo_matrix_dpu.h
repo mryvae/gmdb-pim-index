@@ -2,8 +2,8 @@
 #define __COO_Matrix_DPU_H
 #include <mram.h>
 #include <alloc.h>
-#include "../util/coo_matrix.h"
-#include "../util/kv_set.h"
+#include "../../util/coo_matrix.h"
+#include "../../util/kv_set.h"
 
 typedef __mram_ptr struct _coo_matrix *coo_matrix_dpu;
 typedef __mram_ptr struct _coo_matrix_v *coo_matrix_v_dpu;

@@ -6,8 +6,11 @@ HOST_HEADERS=$(wildcard host/*.h)
 
 DPU_BINARY=${BUILDDIR}/dpu_task
 DPU_SOURCES=$(wildcard dpu/*.c)
+DPU_SOURCES+=$(wildcard dpu/ops/*.c)
+DPU_SOURCES+=$(wildcard dpu/sto/*.c)
 DPU_HEADERS=$(wildcard dpu/*.h)
-
+DPU_HEADERS+=$(wildcard dpu/ops/*.h)
+DPU_HEADERS+=$(wildcard dpu/sto/*.h)
 UTIL_HEADERS=$(wildcard util/*.h)
 UTIL_SOURCES=$(wildcard util/*.c)
 UPMEM_HEADERS=$(wildcard upmemInterface/*.h)

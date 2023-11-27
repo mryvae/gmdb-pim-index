@@ -5,9 +5,9 @@
 #include <mram.h>
 #include <stddef.h>
 #include "mram_memory.h"
-#include "../util/util.h"
+#include "../../util/util.h"
 #include "linear_mram_alloc.h"
-#include "../util/param.h"
+#include "../../util/param.h"
 
 #define PRIMARY_INDEX_OK 0
 #define PRIMARY_INDEX_ERR 1
@@ -38,7 +38,8 @@ typedef struct _primary_index_dpu
     __mram_ptr primary_index_entry *buckets;
 } primary_index_dpu;
 
-void primary_index_dpu_init(primary_index_dpu *pid, __mram_ptr primary_index_entry *buckets_addr, PRIMARY_INDEX_ID index_id, uint32_t buckets_size);
+void primary_index_dpu_init_allocator();
+primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id, uint32_t buckets_size);
 void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id);
 primary_index_dpu *primary_index_dpu_check(uint32_t index_id);
 int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val);

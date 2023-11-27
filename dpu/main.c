@@ -1,13 +1,13 @@
 #include <barrier.h>
-#include "global_var.h"
+#include "./sto/global_var.h"
 #include "perfcounter.h"
-#include "push_package_dpu.h"
+#include "./sto/push_package_dpu.h"
 #include "../util/util.h"
-#include "global_mutex.h"
-#include "op_primary_index_create.h"
-#include "op_primary_index_delete.h"
-#include "op_primary_index_insert.h"
-#include "op_primary_index_lookup.h"
+#include "./sto/global_mutex.h"
+#include "./ops/op_primary_index_create.h"
+#include "./ops/op_primary_index_delete.h"
+#include "./ops/op_primary_index_insert.h"
+#include "./ops/op_primary_index_lookup.h"
 
 BARRIER_INIT(barrier1, NR_TASKLETS);
 BARRIER_INIT(barrier2, NR_TASKLETS);
@@ -15,13 +15,7 @@ BARRIER_INIT(barrier2, NR_TASKLETS);
 void initial()
 {
     mem_reset();
-    if (!global_index_mram_allocator_initial_flag)
-    {
-        linear_mram_allocator_initial(&global_index_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE,
-                                  linear_allocator_mutex_lock, linear_allocator_mutex_unlock);
-        global_index_mram_allocator_initial_flag = 1;
-    }
-
+    primary_index_dpu_init_allocator();
     global_kvsd = push_package_dpu_kv_get();
     global_kvsd_nnz = global_kvsd->nnz;
     global_key_len = global_query_parameter->key_len;
