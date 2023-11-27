@@ -36,27 +36,37 @@ static inline int _key_compare(char *key1, uint32_t key1_len, char *key2, uint32
     return 1;
 }
 
-void primary_index_dpu_init_allocator()
+void primary_index_dpu_allocator_init(__mram_ptr void *start, size_t size)
 {
     if (!global_index_mram_allocator_initial_flag)
     {
-        linear_mram_allocator_initial(&global_index_mram_allocator, INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE,
+        linear_mram_allocator_initial(&global_index_mram_allocator, start, size,
                                       linear_allocator_mutex_lock, linear_allocator_mutex_unlock);
         global_index_mram_allocator_initial_flag = 1;
     }
 }
 
-primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id, uint32_t buckets_size)
+void primary_index_dpu_space_init(__mram_ptr void *start, size_t size)
 {
-    if (global_num_pre_load_primary_index >= MAX_NUM_PRE_LOAD_PRIMARY_INDEX)
+    if (!global_primary_index_space_initial_flag)
+    {
+        global_primary_index_space_addr = start;
+        global_primary_index_space_size = size;
+        global_primary_index_space_initial_flag = 1;
+    }
+}
+
+primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id)
+{
+    if (global_num_pre_load_primary_index >= PRIMARY_INDEX_MAX_NUM)
     {
         return NULL;
     }
     primary_index_dpu *pid = &(global_prestored_primary_index[global_num_pre_load_primary_index]);
     pid->index_id = index_id;
-    pid->buckets_size = next_power(buckets_size);
+    pid->buckets_size = next_power(global_primary_index_space_size / PRIMARY_INDEX_MAX_NUM / sizeof(primary_index_entry) + 1) / 2;
     pid->sizemask = pid->buckets_size - 1;
-    pid->buckets = (__mram_ptr primary_index_entry *)(global_prestored_primary_index_space_addr[global_num_pre_load_primary_index]);
+    pid->buckets = (__mram_ptr primary_index_entry *)(global_primary_index_space_addr + global_primary_index_space_size / PRIMARY_INDEX_MAX_NUM);
     pid->used = 0;
     global_num_pre_load_primary_index++;
     return pid;

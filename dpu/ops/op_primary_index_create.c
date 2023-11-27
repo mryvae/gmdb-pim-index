@@ -2,7 +2,7 @@
 
 void primary_index_create_prepare()
 {
-    global_primary_index = primary_index_dpu_create(primary_index_id, PRIMARY_INDEX_BUCKETS_INITIAL_SIZE);
+    global_primary_index = primary_index_dpu_create(primary_index_id);
 }
 
 void primary_index_create_tasklets_run()

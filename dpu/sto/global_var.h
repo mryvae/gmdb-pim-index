@@ -25,8 +25,10 @@ extern uint32_t global_key_len;
 extern primary_index_dpu *global_primary_index;
 
 extern __host uint32_t global_num_pre_load_primary_index;
-extern __host primary_index_dpu global_prestored_primary_index[MAX_NUM_PRE_LOAD_PRIMARY_INDEX];
-extern __mram_ptr void *global_prestored_primary_index_space_addr[MAX_NUM_PRE_LOAD_PRIMARY_INDEX];
+extern __host primary_index_dpu global_prestored_primary_index[PRIMARY_INDEX_MAX_NUM];
+extern __mram_ptr void *global_primary_index_space_addr;
+extern size_t global_primary_index_space_size;
+extern uint32_t global_primary_index_space_initial_flag;
 
 extern __host linear_mram_allocator global_index_mram_allocator;
 extern uint32_t global_index_mram_allocator_initial_flag;

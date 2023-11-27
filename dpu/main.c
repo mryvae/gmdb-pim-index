@@ -15,7 +15,8 @@ BARRIER_INIT(barrier2, NR_TASKLETS);
 void initial()
 {
     mem_reset();
-    primary_index_dpu_init_allocator();
+    primary_index_dpu_allocator_init(INDEX_ENTRY_BLOCKS_SPACE_ADDR, INDEX_ENTRY_BLOCKS_SIZE);
+    primary_index_dpu_space_init(PRIMARY_INDEX_SPACE_ADDR, PRIMARY_INDEX_SPACE_SIZE);
     global_kvsd = push_package_dpu_kv_get();
     global_kvsd_nnz = global_kvsd->nnz;
     global_key_len = global_query_parameter->key_len;

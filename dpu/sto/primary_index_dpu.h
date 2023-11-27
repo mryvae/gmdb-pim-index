@@ -38,8 +38,9 @@ typedef struct _primary_index_dpu
     __mram_ptr primary_index_entry *buckets;
 } primary_index_dpu;
 
-void primary_index_dpu_init_allocator();
-primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id, uint32_t buckets_size);
+void primary_index_dpu_allocator_init(__mram_ptr void *start, size_t size);
+void primary_index_dpu_space_init(__mram_ptr void *start, size_t size);
+primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id);
 void primary_index_dpu_init_buckets(primary_index_dpu *pid, uint32_t tasklet_id);
 primary_index_dpu *primary_index_dpu_check(uint32_t index_id);
 int primary_index_dpu_insert(primary_index_dpu *pid, char *key, uint32_t key_len, uint64_t val);
