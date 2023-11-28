@@ -5,8 +5,8 @@
 #include "primary_index_host.h"
 #include "dpu_index_manager.h"
 
-void test_primary_index();
+void test_primary_index(void);
 
-void test_dpu_index_manager();
+void test_dpu_index_manager(void);
 
 #endif

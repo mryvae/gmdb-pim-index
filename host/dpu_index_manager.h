@@ -13,12 +13,12 @@
 typedef struct _dpu_index_manager
 {
     pthread_mutex_t lock;
-    volatile global_nr_pre_load_index;
+    volatile int global_nr_pre_load_index;
 
     hash_map *dpu_set_map;
 } dpu_index_manager;
 
-void dpu_index_manager_init();
+void dpu_index_manager_init(void);
 int dpu_index_manager_create_index(PRIMARY_INDEX_ID id);
 dpu_set_context *dpu_index_manager_get_dpu_set(PRIMARY_INDEX_ID id);
 

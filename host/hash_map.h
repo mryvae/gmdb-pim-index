@@ -30,6 +30,6 @@ hash_map *hash_map_new(uint32_t buckets_size);
 int hash_map_insert(hash_map *map,int32_t key,uint64_t val);
 entry *hash_map_find(hash_map *map, int32_t key);
 
-void hash_map_test();
+void hash_map_test(void);
 
 #endif
