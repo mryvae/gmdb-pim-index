@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.24.0)
 project(pim_index)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 if(NOT NR_TASKLETS)
     set(NR_TASKLETS 17)
     message(WARNING "NR_TASKLETS is " ${NR_TASKLETS})
@@ -18,7 +20,8 @@ if(NOT EXECUTABLE_OUTPUT_PATH)
     set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 endif()
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/dpu DPU_SOURCES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/dpu/ops DPU_OPS_SOURCES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/dpu/sto DPU_STO_SOURCES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/util UTIL_SOURCES)
 
 ## build dpu binary
@@ -32,8 +35,11 @@ add_custom_target(${DPU_TASK_NAME} ALL
             -DSTACK_SIZE_DEFAULT=1024
             -I${CMAKE_CURRENT_SOURCE_DIR}/dpu
             -I${CMAKE_CURRENT_SOURCE_DIR}/util
-            ${DPU_SOURCES}
+            -I${CMAKE_CURRENT_SOURCE_DIR}/ops
+            ${DPU_OPS_SOURCES}
+            ${DPU_STO_SOURCES}
             ${UTIL_SOURCES}
+            ${CMAKE_CURRENT_SOURCE_DIR}/dpu/main.c
             -o ${EXECUTABLE_OUTPUT_PATH}/${DPU_TASK_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${DPU_SOURCES} ${UTIL_SOURCES} 
@@ -43,7 +49,6 @@ add_custom_target(${DPU_TASK_NAME} ALL
 install(PROGRAMS ${EXECUTABLE_OUTPUT_PATH}/${DPU_TASK_NAME} DESTINATION bin)
 
 ## build util lib
-unset(CMAKE_C_FLAGS)
 set(PIM_INDEX_UTIL_LIB pim-index-util)
 add_library(${PIM_INDEX_UTIL_LIB} SHARED ${UTIL_SOURCES})
 target_include_directories(${PIM_INDEX_UTIL_LIB} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/util)
@@ -52,8 +57,6 @@ set_target_properties(${PIM_INDEX_UTIL_LIB} PROPERTIES COMPILE_FLAGS "${UTIL_FLA
 install(TARGETS ${PIM_INDEX_UTIL_LIB} LIBRARY DESTINATION lib)
 
 get_target_property(C_FLAGS ${PIM_INDEX_UTIL_LIB} COMPILE_OPTIONS)
-list(REMOVE_ITEM C_FLAGS "-fvisibility=hidden")
-set_target_properties(${PIM_INDEX_UTIL_LIB} PROPERTIES COMPILE_OPTIONS ${C_FLAGS})
 
 # build host
 set(UPMEM_HOST_NAME host_app)
@@ -65,7 +68,7 @@ set_target_properties(${UPMEM_HOST_NAME} PROPERTIES COMPILE_OPTIONS "${C_OPTIONS
 target_include_directories(${UPMEM_HOST_NAME} 
                 PRIVATE ${UPMEM_SDK_DIR}/include/dpu
                         ${CMAKE_CURRENT_SOURCE_DIR}/util)
-target_link_directories(${UPMEM_HOST_NAME} PRIVATE ${UPMEM_SDK_DIR/lib})
+target_link_directories(${UPMEM_HOST_NAME} PRIVATE ${UPMEM_SDK_DIR}/lib)
 target_link_libraries(${UPMEM_HOST_NAME} dpu dpuverbose pim-index-util)
 install(TARGETS ${UPMEM_HOST_NAME} RUNTIME DESTINATION bin)
 
