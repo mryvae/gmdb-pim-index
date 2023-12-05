@@ -94,9 +94,9 @@ primary_index_dpu *primary_index_dpu_check(uint32_t index_id)
     primary_index_dpu *index = NULL;
     for (int j = 0; j < global_num_pre_load_primary_index; j++)
     {
-        if (primary_index_id == global_prestored_primary_index[j].index_id)
+        if (index_id == global_prestored_primary_index[j].index_id)
         {
-            global_primary_index = &(global_prestored_primary_index[j]);
+            index = &(global_prestored_primary_index[j]);
             break;
         }
     }
