@@ -23,8 +23,8 @@ typedef struct _dpu_set_context
     pthread_mutex_t lock;
     volatile int nr_pre_load_index;
     DPU_SET_ID dpu_set_id;
-    struct dpu_set_t dpu_set;
-    // XDPI interface;
+    // struct dpu_set_t dpu_set;
+    XDPI interface;
     uint32_t nr_dpus;
     uint32_t nr_slave_tasklets;
     dpu_push_info push_info;

@@ -32,8 +32,8 @@ typedef struct _dpu_pull_info
 // dpu_pull_info
 dpu_pull_info *dpu_pull_info_init(dpu_pull_info *pull_info, uint32_t nr_dpus);
 void dpu_pull_info_free(dpu_pull_info *pull_info);
-void dpu_pull_coo_metadatas(dpu_pull_info *pull_info, struct dpu_set_t dpu_set);
-void dpu_pull_coo_results(dpu_pull_info *pull_info, struct dpu_set_t dpu_set);
+void dpu_pull_coo_metadatas(dpu_pull_info *pull_info, XDPI interface);
+void dpu_pull_coo_results(dpu_pull_info *pull_info, XDPI interface);
 void dpu_pull_merge_results(dpu_pull_info *pull_info, uint64_t *vals, uint32_t batch_size);
 
 #endif
