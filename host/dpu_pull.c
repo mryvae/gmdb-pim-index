@@ -84,6 +84,7 @@ void dpu_pull_coo_results(dpu_pull_info *pull_info, XDPI interface)
     {
         buffers[i] = pull_info->coo_results[i];
     }
+    length = sizeof(struct _coo_matrix_v) + sizeof(coo_matrix_v_elem) * max_capacity;
     ReceiveFromPIM(interface, buffers, DPU_MRAM_HEAP_POINTER_NAME, COO_RESULT_OFFSET, align8(length), 0);
 
     // DPU_FOREACH(dpu_set, dpu, each_dpu)
