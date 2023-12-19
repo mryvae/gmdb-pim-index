@@ -66,7 +66,7 @@ primary_index_dpu *primary_index_dpu_create(PRIMARY_INDEX_ID index_id)
     pid->index_id = index_id;
     pid->buckets_size = next_power(global_primary_index_space_size / PRIMARY_INDEX_MAX_NUM / sizeof(primary_index_entry) + 1) / 2;
     pid->sizemask = pid->buckets_size - 1;
-    pid->buckets = (__mram_ptr primary_index_entry *)(global_primary_index_space_addr + global_primary_index_space_size / PRIMARY_INDEX_MAX_NUM);
+    pid->buckets = (__mram_ptr primary_index_entry *)(global_primary_index_space_addr + global_num_pre_load_primary_index * global_primary_index_space_size / PRIMARY_INDEX_MAX_NUM);
     pid->used = 0;
     global_num_pre_load_primary_index++;
     return pid;
