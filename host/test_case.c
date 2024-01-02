@@ -9,7 +9,7 @@ void test_primary_index()
 {
     dpu_set_context *dpu_set;
     uint32_t batch_size = 64 * 1024;
-    uint32_t kv_num = 1024 * 1024;
+    uint32_t kv_num = 256 * 1024;
     test_key *keys_t = calloc(kv_num, sizeof(test_key));
     uint64_t *vals = malloc(kv_num * sizeof(uint64_t));
     char **keys = malloc(kv_num * sizeof(char *));

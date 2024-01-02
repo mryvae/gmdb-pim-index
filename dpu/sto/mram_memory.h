@@ -14,7 +14,7 @@
 
 #define PRIMARY_INDEX_SPACE_ADDR ((__mram_ptr void *)(0x2000000))
 #define PRIMARY_INDEX_SPACE_SIZE (0x1000000)
-#define PRIMARY_INDEX_MAX_NUM 16
+#define PRIMARY_INDEX_MAX_NUM 32
 
 
 #define INDEX_ENTRY_BLOCKS_SPACE_ADDR ((__mram_ptr void *)(0x3000000))
